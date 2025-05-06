@@ -70,6 +70,34 @@ def setup_logger(app_name="app", project_root=None, console_output=True):
 # 初始化日志
 logger, config_info = setup_logger(app_name="janai_monitor", console_output=True)
 
+from textual_logger import TextualLoggerManager
+
+# Textual 布局配置
+TEXTUAL_LAYOUT = {
+    "stats": {
+        "ratio": 2,
+        "title": "📊 总体统计",
+        "style": "lightyellow"
+    },
+    "fileops": {
+        "ratio": 3,
+        "title": "🔄 文件处理",
+        "style": "lightcyan"
+    },
+    "processing": {
+        "ratio": 3,
+        "title": "📝 处理日志",
+        "style": "lightpink"
+    },
+    "updating": {
+        "ratio": 1,
+        "title": "ℹ️ 状态更新",
+        "style": "lightgreen"
+    }
+}
+
+TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
+
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='MangaJaNaiConverter监控工具')
