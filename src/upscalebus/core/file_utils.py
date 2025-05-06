@@ -15,9 +15,9 @@ def remove_empty_directories(directory):
                 if not os.listdir(dir_path):  # 检查文件夹是否为空
                     os.rmdir(dir_path)
                     removed_count += 1
-                    logger.info(f"[#process_log]已删除空文件夹: {dir_path}")
+                    logger.info(f"[#processing]已删除空文件夹: {dir_path}")
             except Exception as e:
-                logger.info(f"[#process_log]删除空文件夹失败 {dir_path}: {e}")
+                logger.info(f"[#processing]删除空文件夹失败 {dir_path}: {e}")
     return removed_count
 
 def remove_temp_files(directory):
@@ -30,9 +30,9 @@ def remove_temp_files(directory):
                 try:
                     os.remove(file_path)
                     removed_count += 1
-                    logger.info(f"[#process_log]已删除临时文件: {file_path}")
+                    logger.info(f"[#processing]已删除临时文件: {file_path}")
                 except Exception as e:
-                    logger.info(f"[#process_log]删除临时文件失败 {file_path}: {e}")
+                    logger.info(f"[#processing]删除临时文件失败 {file_path}: {e}")
     return removed_count
 
 def count_files_in_zip(zip_path):
@@ -46,5 +46,5 @@ def count_files_in_zip(zip_path):
                          and zip_file.getinfo(name).file_size > 0]
             return len(valid_files)
     except Exception as e:
-        logger.info(f"[#process_log]读取zip文件失败 {zip_path}: {str(e)}")
+        logger.info(f"[#processing]读取zip文件失败 {zip_path}: {str(e)}")
         return 0

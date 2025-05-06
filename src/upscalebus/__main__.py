@@ -1,4 +1,4 @@
-# d:\1VSCODE\Projects\ImageAll\UpscalePipe\src\upsaclebus\upscale_bus.py
+# d:\1VSCODE\Projects\ImageAll\UpscalePipe\src\upscalebus\upscale_bus.py
 import os
 # 从新模块导入功能
 from .core.file_utils import remove_temp_files
@@ -82,25 +82,25 @@ from textual_logger import TextualLoggerManager
 
 # Textual 布局配置
 TEXTUAL_LAYOUT = {
-    "current_stats": {
+    "stats": {
         "ratio": 2,
         "title": "📊 总体统计",
         "style": "lightyellow"
     },
-    "current_progress": {
-        "ratio": 4,
+    "fileops": {
+        "ratio": 3,
         "title": "🔄 文件处理",
         "style": "lightcyan"
     },
-    "process_log": {
-        "ratio": 1,
+    "processing": {
+        "ratio": 3,
         "title": "📝 处理日志",
-        "style": "lightmagenta"
+        "style": "lightpink"
     },
-    "update_log": {
+    "updating": {
         "ratio": 1,
         "title": "ℹ️ 状态更新",
-        "style": "lightblue"
+        "style": "lightgreen"
     }
 }
 
@@ -117,22 +117,22 @@ def main():
 
     # 依次处理每对目录
     for source_dir, target_dir in directory_pairs:
-        logger.info(f"[#current_stats]\n开始处理目录对：")
-        logger.info(f"[#process_log]源目录: {source_dir}")
-        logger.info(f"[#process_log]目标目录: {target_dir}")
+        logger.info(f"[#stats]\n开始处理目录对：")
+        logger.info(f"[#processing]源目录: {source_dir}")
+        logger.info(f"[#processing]目标目录: {target_dir}")
 
         if not os.path.exists(source_dir):
-            logger.info("[#process_log]源目录不存在！")
+            logger.info("[#processing]源目录不存在！")
             continue
         # 目标目录不存在时，compare_and_copy_archives 会自动创建
 
         # 先检测损坏的压缩包
-        logger.info("[#process_log]\n开始检测损坏压缩包...")
+        logger.info("[#processing]\n开始检测损坏压缩包...")
         process_corrupted_archives(source_dir) # 调用重构后的函数
 
         # 删除临时文件
         temp_files_removed = remove_temp_files(source_dir) # 调用重构后的函数
-        logger.info(f"[#process_log]\n已删除 {temp_files_removed} 个临时文件")
+        logger.info(f"[#processing]\n已删除 {temp_files_removed} 个临时文件")
 
         # 执行文件移动/复制操作
         compare_and_copy_archives(source_dir, target_dir, is_move) # 调用重构后的函数

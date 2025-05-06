@@ -27,7 +27,7 @@ profile = "black"
 line_length = 100
 [tool.setuptools]
 package-dir = {"" = "src"} 
-packages = ["janaimonitor", "upsaclebus"]
+packages = ["janaimonitor", "upscalebus"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"

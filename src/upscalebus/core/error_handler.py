@@ -30,7 +30,7 @@ def handle_file_operation(skip_errors: bool = True) -> Callable:
                 if not skip_errors:
                     raise FileProcessError(error_msg, e)
                 else:
-                    logger.info(f"[#update_log]跳过错误,继续执行: {str(e)}")
+                    logger.info(f"[#updating]跳过错误,继续执行: {str(e)}")
                     return None
         return wrapper
     return decorator 
