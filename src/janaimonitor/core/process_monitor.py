@@ -1,5 +1,5 @@
 """
-进程监控模块 - 负责启动、监控和重启MangaJaNaiConverter进程
+进程监控模块 负责启动、监控和重启MangaJaNaiConverter进程
 """
 import os
 import re
@@ -18,7 +18,6 @@ LOG_PATTERNS = {
     '#stats': [
         r'TOTALZIP=\d+',
         r'处理目录 \(\d+\/\d+\) \d+%',
-        r'[@progress]',
         r'共处理'
     ],
     '#fileops': [
@@ -31,18 +30,14 @@ LOG_PATTERNS = {
         r'copying file'
     ],
     '#processing': [
-        r'Matched Chain:',
         r'ModelFilePath',
-        r'Auto adjusted levels',
         r'upscale',
         r'VipsForeignLoad'
     ],
     '#updating': [
         r'PROGRESS=',
-        r'\[#status\]',
-        r'\[##status\]',
-        r'\[#success\]',
-        r'\[#error\]'
+        r'Matched Chain:',
+        r'Auto adjusted levels',
     ]
 }
 
@@ -87,7 +82,7 @@ def setup_subprocess_logger(main_log_file):
         retention="30 days",
         compression="zip",
         encoding="utf-8",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level.icon} {level: <8} | [{extra[category]}] - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level.icon} {level: <8} | [{extra[category]}] {message}",
         filter=lambda record: "subprocess" in record["extra"]
     )
     
