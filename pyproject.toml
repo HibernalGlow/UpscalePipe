@@ -1,7 +1,35 @@
 [project]
 name = "upscalepipe"
 version = "0.1.0"
-description = "Add your description here"
+description = "用于处理图像文件和压缩包的工具集"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "badzipfliter @ git+https://github.com/HibernalGlow/ImageFliter.git#subdirectory=src/badzipfliter",
+    "loguru>=0.7.0",
+    "send2trash>=1.8.0",
+    "TextualLog @ git+https://github.com/HibernalGlow/TextualLog.git",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0"
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+upscale-bus = "upscalepipe.src.upsaclebus.upscale_bus:main"
+janai-monitor = "upscalepipe.src.janaimonitor.janai_monitor:main"
