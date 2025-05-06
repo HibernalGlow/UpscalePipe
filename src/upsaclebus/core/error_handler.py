@@ -1,15 +1,9 @@
 import functools
 import traceback
 from typing import Callable, Any
-from nodes.record.logger_config import setup_logger
+from loguru import logger
 
 # 获取logger实例
-config = {
-    'script_name': 'error_handler',
-    "console_enabled": False,
-}
-logger, _ = setup_logger(config)
-
 class FileProcessError(Exception):
     """文件处理相关的自定义异常"""
     def __init__(self, message: str, original_error: Exception = None):
