@@ -68,7 +68,7 @@ def setup_logger(app_name="app", project_root=None, console_output=True):
     return logger, config_info
 
 
-logger, config_info = setup_logger(app_name="upscale_bus", console_output=True)
+logger, config_info = setup_logger(app_name="upscale_bus", console_output=False)
 
 # error_handler 模块似乎未使用，暂时注释掉
 # from .error_handler import handle_file_operation
@@ -78,6 +78,33 @@ logger, config_info = setup_logger(app_name="upscale_bus", console_output=True)
 # ... (移除 compare_and_copy_archives)
 # ... (移除 check_archive, load_check_history, save_check_history, process_corrupted_archives)
 # ... (移除 TEXTUAL_LAYOUT, config, logger, config_info, TextualLoggerManager setup)
+from textual_logger import TextualLoggerManager
+
+# Textual 布局配置
+TEXTUAL_LAYOUT = {
+    "current_stats": {
+        "ratio": 2,
+        "title": "📊 总体统计",
+        "style": "lightyellow"
+    },
+    "current_progress": {
+        "ratio": 4,
+        "title": "🔄 文件处理",
+        "style": "lightcyan"
+    },
+    "process_log": {
+        "ratio": 1,
+        "title": "📝 处理日志",
+        "style": "lightmagenta"
+    },
+    "update_log": {
+        "ratio": 1,
+        "title": "ℹ️ 状态更新",
+        "style": "lightblue"
+    }
+}
+
+TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
 
 def main():
     """主执行函数"""

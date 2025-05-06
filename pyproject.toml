@@ -33,5 +33,5 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-upscalebus = "upsaclebus.__main__:main"
+upscalebus = "upscalebus.__main__:main"
 janaimonitor = "janaimonitor.__main__:main"
