@@ -2,10 +2,6 @@
 配置常量模块
 """
 import os
-from dotenv import load_dotenv
-
-# 加载环境变量
-load_dotenv(override=True)
 
 # 定义要监视的错误模式 - 更精确的模式
 ERROR_PATTERNS = [
@@ -32,4 +28,3 @@ MANGA_COMMAND = [
     APPSTATE_PATH
 ]
 
-PYTHON_PATH = os.getenv('PYTHON_PATH')
