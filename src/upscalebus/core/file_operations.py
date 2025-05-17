@@ -198,3 +198,34 @@ def backup_file(file_path, backup_dir=None):
     except Exception as e:
         logger.error(f"创建文件备份失败: {str(e)}")
         return None
+
+def rename_cbz_to_zip(directory):
+    """
+    将指定目录下的所有.cbz文件重命名为.zip文件
+    
+    Args:
+        directory: 要处理的目录
+    
+    Returns:
+        int: 重命名的文件数量
+    """
+    renamed_count = 0
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.lower().endswith('.cbz'):
+                source_path = os.path.join(root, file)
+                target_path = os.path.join(root, file[:-4] + '.zip')
+                
+                # 检查目标文件是否已存在
+                if os.path.exists(target_path):
+                    logger.info(f"[#processing]目标文件已存在，跳过重命名: {source_path}")
+                    continue
+                    
+                try:
+                    os.rename(source_path, target_path)
+                    renamed_count += 1
+                    logger.info(f"[#processing]已重命名: {source_path} -> {target_path}")
+                except Exception as e:
+                    logger.info(f"[#processing]重命名失败 {source_path}: {e}")
+    
+    return renamed_count

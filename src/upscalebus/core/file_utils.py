@@ -16,12 +16,14 @@ from rich.table import Table
 from rich.progress import track
 from rich.prompt import Confirm
 
+from .config_manager import config
+
 # 创建Rich控制台对象
 console = Console()
 
-# 安全操作的常量设置
-MIN_VALID_FILE_SIZE = 1024 * 1024  # 1MB，最小有效文件大小
-SIZE_DIFFERENCE_THRESHOLD = 0.5  # 如果源文件小于目标文件的50%，视为可疑操作
+# 从配置文件加载安全操作设置
+MIN_VALID_FILE_SIZE = config.get_value("file_operations.min_valid_file_size", 1024 * 1024)  # 默认1MB
+SIZE_DIFFERENCE_THRESHOLD = config.get_value("file_operations.size_difference_threshold", 0.5)  # 默认50%
 
 def remove_empty_directories(directory):
     """删除指定目录下的所有空文件夹"""
@@ -39,11 +41,14 @@ def remove_empty_directories(directory):
     return removed_count
 
 def remove_temp_files(directory):
-    """删除指定目录下的所有 .tdel 和 .bak 文件"""
+    """删除指定目录下的临时文件（根据配置的扩展名）"""
+    # 从配置文件获取临时文件扩展名
+    temp_extensions = tuple(config.get_value("temp_extensions", ['.tdel', '.bak']))
+    
     removed_count = 0
     for root, _, files in os.walk(directory):
         for file in files:
-            if file.endswith(('.tdel', '.bak')):
+            if file.lower().endswith(temp_extensions):
                 file_path = os.path.join(root, file)
                 try:
                     os.remove(file_path)
@@ -55,7 +60,9 @@ def remove_temp_files(directory):
 
 def count_files_in_zip(zip_path):
     """统计zip文件中的文件数量，忽略特定类型的文件"""
-    ignore_extensions = ('.md', '.yaml', '.yml', '.txt', '.json', '.db', '.ini')
+    # 从配置文件获取要忽略的扩展名
+    ignore_extensions = tuple(config.get_value("file_operations.ignored_extensions", 
+                                             ['.md', '.yaml', '.yml', '.txt', '.json', '.db', '.ini']))
     try:
         with zipfile.ZipFile(zip_path) as zip_file:
             valid_files = [name for name in zip_file.namelist() 

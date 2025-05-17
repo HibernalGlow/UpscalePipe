@@ -7,7 +7,8 @@ from datetime import datetime
 
 # 从新模块导入功能
 from .core.file_utils import remove_temp_files
-from .core.archive_processor import process_corrupted_archives, compare_and_copy_archives
+from .core.archive_processor import process_corrupted_archives, compare_and_copy_archives, process_rename_cbz
+from .core.config_manager import config
 from loguru import logger
 
 # Rich库导入
@@ -145,12 +146,20 @@ def main():
         title="欢迎使用",
         border_style="blue"
     ))
+      # 从配置文件获取默认目录对
+    default_directory_pairs = []
+    directory_pairs_config = config.get_value("directory_pairs", [])
     
-    # 定义默认目录路径列表
-    default_directory_pairs = [
-        ("D:\\3EHV", "E:\\7EHV"),
-        ("E:\\7EHV", "E:\\999EHV"),
-    ]
+    for pair in directory_pairs_config:
+        if "source" in pair and "target" in pair:
+            default_directory_pairs.append((pair["source"], pair["target"]))
+    
+    # 如果配置为空，使用默认值
+    if not default_directory_pairs:
+        default_directory_pairs = [
+            ("D:\\3EHV", "E:\\7EHV"),
+            ("E:\\7EHV", "E:\\999EHV"),
+        ]
     
     # 让用户选择或输入目录对
     console.print("\n[bold]请选择要处理的目录对，或输入新的目录对:[/]")
@@ -187,9 +196,9 @@ def main():
         except ValueError:
             console.print("[red]无效输入，将使用第一个目录对[/]")
             directory_pairs.append(default_directory_pairs[0])
-    
-    # 选择操作类型
-    is_move = Confirm.ask("\n是否移动文件？（否则复制）", default=True)
+      # 选择操作类型（从配置获取默认值）
+    default_mode = config.get_value("default_mode", "move") == "move"
+    is_move = Confirm.ask("\n是否移动文件？（否则复制）", default=default_mode)
     operation_type = "移动" if is_move else "复制"
     
     # 依次处理每对目录
@@ -202,34 +211,40 @@ def main():
         if not os.path.exists(source_dir):
             console.print("[red]源目录不存在！[/]")
             continue
-        
-        # 显示功能菜单
+          # 显示功能菜单
         console.print(Panel("\n[bold]请选择要执行的操作：[/]", border_style="cyan"))
         console.print("1. [green]检测损坏压缩包[/]")
         console.print("2. [green]清理临时文件[/]")
-        console.print("3. [green]执行文件处理操作[/] (复制或移动)")
-        console.print("4. [green]执行全部操作[/] (按顺序执行上述所有操作)")
+        console.print("3. [green]将CBZ重命名为ZIP[/]")
+        console.print("4. [green]执行文件处理操作[/] (复制或移动)")
+        console.print("5. [green]执行全部操作[/] (按顺序执行上述所有操作)")
         console.print("0. [red]跳过此目录对[/]")
         
-        action = Prompt.ask("\n请选择操作", default="4")
+        action = Prompt.ask("\n请选择操作", default="5")
         
         if action == "0":
             console.print("[yellow]已跳过此目录对[/]")
             continue
         
         # 检测损坏的压缩包
-        if action in ["1", "4"]:
+        if action in ["1", "5"]:
             console.print("\n[bold]开始检测损坏压缩包...[/]")
             process_corrupted_archives(source_dir)
         
         # 删除临时文件
-        if action in ["2", "4"]:
+        if action in ["2", "5"]:
             console.print("\n[bold]开始清理临时文件...[/]")
             temp_files_removed = remove_temp_files(source_dir)
             console.print(f"[green]已删除 {temp_files_removed} 个临时文件[/]")
+            
+        # CBZ重命名为ZIP
+        if action in ["3", "5"]:
+            console.print("\n[bold]开始将CBZ重命名为ZIP...[/]")
+            renamed_count = process_rename_cbz(source_dir)
+            console.print(f"[green]已重命名 {renamed_count} 个CBZ文件为ZIP[/]")
         
         # 执行文件移动/复制操作
-        if action in ["3", "4"]:
+        if action in ["4", "5"]:
             console.print(f"\n[bold]开始{operation_type}文件...[/]")
             compare_and_copy_archives(source_dir, target_dir, is_move)
 

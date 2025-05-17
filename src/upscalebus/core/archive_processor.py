@@ -348,8 +348,8 @@ def process_corrupted_archives(directory, skip_checked=True):
     console.print(f"总大小: [green]{format_size(dir_structure['total_size'])}[/]")
     
     # 让用户选择要处理的子目录
-    selected_dir = select_subdirectory(dir_structure, "请选择要检测的子目录")
-    
+    # selected_dir = select_subdirectory(dir_structure, "请选择要检测的子目录")
+    selected_dir = dir_structure
     # 从配置获取压缩包扩展名
     archive_extensions = tuple(config.get_value('file_operations.archive_extensions', 
                                               ['.zip', '.cbz', '.rar', '.7z']))
@@ -392,7 +392,7 @@ def process_corrupted_archives(directory, skip_checked=True):
     console.print(f"[green]找到 {total} 个需要检测的压缩包文件。[/]")
     
     # 预览并询问是否继续
-    if not Confirm.ask("\n是否继续检测这些文件？"):
+    if not Confirm.ask("\n是否继续检测这些文件？", default=True):
         console.print("[yellow]操作已取消。[/]")
         return
     
@@ -480,3 +480,35 @@ def process_corrupted_archives(directory, skip_checked=True):
         title="检测完成", 
         border_style="green"
     ))
+
+def process_rename_cbz(directory):
+    """
+    处理指定目录下的CBZ文件，将其重命名为ZIP文件
+    
+    Args:
+        directory: 要处理的目录
+    """
+    from .file_operations import rename_cbz_to_zip
+    
+    console.print(Panel(f"[bold]开始处理目录中的CBZ文件[/]\n\n目录: [green]{directory}[/]", 
+                       title="CBZ重命名", border_style="blue"))
+    
+    # 扫描目录结构
+    dir_structure = scan_directory_structure(directory)
+    
+    # 显示目录统计
+    console.print(f"\n[bold]目录统计：[/]")
+    console.print(f"总压缩包数: [green]{dir_structure['archive_count']}[/]")
+    
+    # 让用户选择要处理的子目录
+    # selected_dir = select_subdirectory(dir_structure, "请选择要处理的子目录")
+    selected_dir = dir_structure
+    # 处理CBZ文件
+    console.print("\n[bold]开始处理CBZ文件...[/]")
+    renamed_count = rename_cbz_to_zip(selected_dir["path"])
+    
+    # 显示结果
+    console.print(f"\n[bold]处理完成：[/]")
+    console.print(f"已重命名 [green]{renamed_count}[/] 个CBZ文件为ZIP文件")
+    
+    return renamed_count

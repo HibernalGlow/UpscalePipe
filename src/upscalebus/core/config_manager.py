@@ -35,28 +35,39 @@ class ConfigManager:
         
         Returns:
             dict: 配置字典
-        """
-        # 默认配置
+        """        # 默认配置
         default_config = {
             "file_operations": {
                 "min_valid_file_size": 1048576,  # 1MB
                 "size_difference_threshold": 0.5,
                 "ignored_extensions": [".md", ".yaml", ".yml", ".txt", ".json", ".db", ".ini"],
-                "archive_extensions": [".zip", ".cbz", ".rar", ".7z"],
-                "temp_extensions": [".tdel", ".bak"]
+                "rename_cbz_to_zip": True,
+                "auto_cleanup": True
             },
-            "directories": {
-                "default_pairs": [
-                    {"source": "D:\\3EHV", "target": "E:\\7EHV"},
-                    {"source": "E:\\7EHV", "target": "E:\\999EHV"}
-                ],
-                "backup_dir": None
-            },
-            "processing": {
+            "archive_extensions": [".zip", ".cbz", ".rar", ".7z"],
+            "temp_extensions": [".tdel", ".bak"],
+            "directory_pairs": [
+                {"source": "D:\\3EHV", "target": "E:\\7EHV"},
+                {"source": "E:\\7EHV", "target": "E:\\999EHV"}
+            ],
+            "scan": {
                 "max_workers": 4,
-                "auto_remove_empty_dirs": True,
-                "auto_clean_temp_files": True
-            }
+                "skip_checked": True
+            },
+            "ui": {
+                "table_style": "rounded",
+                "success_color": "green",
+                "error_color": "red",
+                "warning_color": "yellow",
+                "info_color": "blue"
+            },
+            "auto_operations": {
+                "check_corrupted": True,
+                "clean_temp_files": True,
+                "rename_cbz_to_zip": True,
+                "remove_empty_dirs": True
+            },
+            "default_mode": "move"
         }
         
         # 检查配置文件是否存在
