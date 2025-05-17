@@ -10,22 +10,22 @@ from typing import Dict, List, Tuple, Optional, Any
 from loguru import logger
 from rich.progress import Progress
 
-from .config_manager import config
-from .file_operations import (
+from .config import config
+from .operation import (
     remove_empty_directories, 
     remove_temp_files, 
     is_safe_to_overwrite, 
     backup_file,
     format_size
 )
-from .archive_scanner import (
+from .scan import (
     scan_directory_structure, 
     check_archive, 
     load_check_history, 
     save_check_history,
     ArchiveOperation
 )
-from .ui_helper import (
+from .ui import (
     console, 
     display_directory_tree, 
     generate_operations_preview, 
@@ -488,7 +488,7 @@ def process_rename_cbz(directory):
     Args:
         directory: 要处理的目录
     """
-    from .file_operations import rename_cbz_to_zip
+    from .operation import rename_cbz_to_zip
     
     console.print(Panel(f"[bold]开始处理目录中的CBZ文件[/]\n\n目录: [green]{directory}[/]", 
                        title="CBZ重命名", border_style="blue"))

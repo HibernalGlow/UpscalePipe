@@ -10,8 +10,8 @@ from typing import Dict, List, Tuple, Optional, Any
 
 from loguru import logger
 
-from .config_manager import config
-from .file_operations import format_size
+from .config import config
+from .operation import format_size
 
 def scan_directory_structure(root_dir: str) -> Dict:
     """

@@ -6,9 +6,9 @@ from pathlib import Path
 from datetime import datetime
 
 # 从新模块导入功能
-from .core.file_utils import remove_temp_files
-from .core.archive_processor import process_corrupted_archives, compare_and_copy_archives, process_rename_cbz
-from .core.config_manager import config
+from .core.operation import remove_temp_files
+from .core.process import process_corrupted_archives, compare_and_copy_archives, process_rename_cbz
+from .core.config import config
 from loguru import logger
 
 # Rich库导入

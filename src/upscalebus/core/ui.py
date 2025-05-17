@@ -13,8 +13,8 @@ from rich.progress import Progress
 from rich.style import Style
 from rich.text import Text
 
-from .archive_scanner import ArchiveOperation
-from .file_operations import format_size
+from .scan import ArchiveOperation
+from .operation import format_size
 
 # 创建一个全局控制台实例
 console = Console()
