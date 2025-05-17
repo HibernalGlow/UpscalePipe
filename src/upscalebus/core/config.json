@@ -1,0 +1,30 @@
+{
+    "file_operations": {
+        "min_valid_file_size": 1048576,
+        "size_difference_threshold": 0.5,
+        "ignored_extensions": [".md", ".yaml", ".yml", ".txt", ".json", ".db", ".ini"]
+    },
+    "archive_extensions": [".zip", ".cbz", ".rar", ".7z"],
+    "temp_extensions": [".tdel", ".bak"],
+    "directory_pairs": [
+        {
+            "source": "D:\\3EHV",
+            "target": "E:\\7EHV"
+        },
+        {
+            "source": "E:\\7EHV",
+            "target": "E:\\999EHV"
+        }
+    ],
+    "scan": {
+        "max_workers": 4,
+        "skip_checked": true
+    },
+    "ui": {
+        "table_style": "rounded",
+        "success_color": "green",
+        "error_color": "red",
+        "warning_color": "yellow",
+        "info_color": "blue"
+    }
+}

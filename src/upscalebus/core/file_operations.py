@@ -1,30 +1,36 @@
 """
-文件系统工具模块 - 提供文件和目录操作的辅助函数
+文件操作模块 - 提供文件和目录操作的基础功能
 """
 import os
-import zipfile
 import shutil
 import time
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Union
 
 from loguru import logger
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.progress import track
-from rich.prompt import Confirm
 
-# 创建Rich控制台对象
-console = Console()
+from .config_manager import config
 
-# 安全操作的常量设置
-MIN_VALID_FILE_SIZE = 1024 * 1024  # 1MB，最小有效文件大小
-SIZE_DIFFERENCE_THRESHOLD = 0.5  # 如果源文件小于目标文件的50%，视为可疑操作
+def format_size(size_in_bytes):
+    """将字节大小转换为人类可读的格式"""
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if size_in_bytes < 1024.0:
+            return f"{size_in_bytes:.2f} {unit}"
+        size_in_bytes /= 1024.0
+    return f"{size_in_bytes:.2f} PB"
 
 def remove_empty_directories(directory):
-    """删除指定目录下的所有空文件夹"""
+    """
+    删除指定目录下的所有空文件夹
+    
+    Args:
+        directory: 要处理的目录
+    
+    Returns:
+        int: 删除的空文件夹数量
+    """
     removed_count = 0
     for root, dirs, _ in os.walk(directory, topdown=False):
         for dir_name in dirs:
@@ -39,11 +45,22 @@ def remove_empty_directories(directory):
     return removed_count
 
 def remove_temp_files(directory):
-    """删除指定目录下的所有 .tdel 和 .bak 文件"""
+    """
+    删除指定目录下的所有临时文件（根据配置的扩展名）
+    
+    Args:
+        directory: 要处理的目录
+        
+    Returns:
+        int: 删除的文件数量
+    """
+    # 从配置获取临时文件扩展名
+    temp_extensions = tuple(config.get_value('file_operations.temp_extensions', ['.tdel', '.bak']))
+    
     removed_count = 0
     for root, _, files in os.walk(directory):
         for file in files:
-            if file.endswith(('.tdel', '.bak')):
+            if file.endswith(temp_extensions):
                 file_path = os.path.join(root, file)
                 try:
                     os.remove(file_path)
@@ -54,35 +71,39 @@ def remove_temp_files(directory):
     return removed_count
 
 def count_files_in_zip(zip_path):
-    """统计zip文件中的文件数量，忽略特定类型的文件"""
-    ignore_extensions = ('.md', '.yaml', '.yml', '.txt', '.json', '.db', '.ini')
+    """
+    统计zip文件中的文件数量和总大小，忽略特定类型的文件
+    
+    Args:
+        zip_path: zip文件路径
+        
+    Returns:
+        tuple: (文件数量, 内容总大小)
+    """
+    # 从配置获取忽略的扩展名
+    ignore_extensions = tuple(config.get_value('file_operations.ignored_extensions', 
+                                              ['.md', '.yaml', '.yml', '.txt', '.json', '.db', '.ini']))
+    
     try:
         with zipfile.ZipFile(zip_path) as zip_file:
             valid_files = [name for name in zip_file.namelist() 
-                         if not name.lower().endswith(ignore_extensions)
-                         and not name.endswith('/')
-                         and zip_file.getinfo(name).file_size > 0]
-            return len(valid_files), sum(zip_file.getinfo(name).file_size for name in valid_files)
+                          if not name.lower().endswith(ignore_extensions)
+                          and not name.endswith('/')
+                          and zip_file.getinfo(name).file_size > 0]
+            
+            total_size = sum(zip_file.getinfo(name).file_size for name in valid_files)
+            return len(valid_files), total_size
     except Exception as e:
         logger.info(f"[#processing]读取zip文件失败 {zip_path}: {str(e)}")
         return 0, 0
 
-def format_size(size_in_bytes):
-    """将字节大小转换为人类可读的格式"""
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-        if size_in_bytes < 1024.0:
-            return f"{size_in_bytes:.2f} {unit}"
-        size_in_bytes /= 1024.0
-    return f"{size_in_bytes:.2f} PB"
-
-def is_safe_to_overwrite(source_path, target_path, min_size=MIN_VALID_FILE_SIZE):
+def is_safe_to_overwrite(source_path, target_path):
     """
     检查是否可以安全地覆盖目标文件
     
     Args:
         source_path: 源文件路径
         target_path: 目标文件路径
-        min_size: 最小有效文件大小（字节）
         
     Returns:
         tuple: (is_safe, reason, source_info, target_info)
@@ -91,6 +112,10 @@ def is_safe_to_overwrite(source_path, target_path, min_size=MIN_VALID_FILE_SIZE)
             - source_info: 源文件信息
             - target_info: 目标文件信息
     """
+    # 从配置获取安全阈值
+    min_size = config.get_value('file_operations.min_valid_file_size', 1024 * 1024)  # 默认1MB
+    threshold = config.get_value('file_operations.size_difference_threshold', 0.5)  # 默认50%
+    
     if not os.path.exists(source_path):
         return False, "源文件不存在", None, None
     
@@ -112,11 +137,15 @@ def is_safe_to_overwrite(source_path, target_path, min_size=MIN_VALID_FILE_SIZE)
         return False, f"源文件过小 ({format_size(source_size)})", source_info, target_info
     
     # 源文件明显小于目标文件
-    if source_size < target_size * SIZE_DIFFERENCE_THRESHOLD:
+    if source_size < target_size * threshold:
         return False, f"源文件({format_size(source_size)})明显小于目标文件({format_size(target_size)})", source_info, target_info
     
+    # 从配置获取压缩包扩展名
+    archive_extensions = tuple(config.get_value('file_operations.archive_extensions', 
+                                               ['.zip', '.cbz', '.rar', '.7z']))
+    
     # 如果是压缩包，比较内部文件数量
-    if source_path.lower().endswith(('.zip', '.cbz')):
+    if any(source_path.lower().endswith(ext) for ext in archive_extensions):
         source_files, source_content_size = count_files_in_zip(source_path)
         target_files, target_content_size = count_files_in_zip(target_path)
         
@@ -125,73 +154,13 @@ def is_safe_to_overwrite(source_path, target_path, min_size=MIN_VALID_FILE_SIZE)
         target_info["files"] = target_files
         target_info["content_size"] = target_content_size
         
-        if source_files < target_files * SIZE_DIFFERENCE_THRESHOLD:
+        if source_files < target_files * threshold:
             return False, f"源压缩包内文件数量({source_files})明显少于目标压缩包({target_files})", source_info, target_info
         
-        if source_content_size < target_content_size * SIZE_DIFFERENCE_THRESHOLD:
+        if source_content_size < target_content_size * threshold:
             return False, f"源压缩包内容大小({format_size(source_content_size)})明显小于目标压缩包({format_size(target_content_size)})", source_info, target_info
     
     return True, "文件检查通过，可以安全覆盖", source_info, target_info
-
-def scan_directory_structure(root_dir: str) -> Dict:
-    """
-    扫描目录结构，返回层次化的目录信息
-    
-    Args:
-        root_dir: 要扫描的根目录
-        
-    Returns:
-        dict: 包含目录结构和文件信息的嵌套字典
-    """
-    result = {
-        "path": root_dir,
-        "name": os.path.basename(root_dir) or root_dir,
-        "type": "directory",
-        "subdirs": [],
-        "files": [],
-        "archive_count": 0,
-        "total_size": 0
-    }
-    
-    try:
-        items = os.listdir(root_dir)
-        
-        dirs = []
-        files = []
-        
-        for item in items:
-            full_path = os.path.join(root_dir, item)
-            
-            if os.path.isdir(full_path):
-                dirs.append(item)
-            else:
-                file_size = os.path.getsize(full_path)
-                file_info = {
-                    "name": item,
-                    "path": full_path,
-                    "size": file_size,
-                    "is_archive": item.lower().endswith(('.zip', '.cbz', '.rar', '.7z'))
-                }
-                files.append(file_info)
-                result["total_size"] += file_size
-                if file_info["is_archive"]:
-                    result["archive_count"] += 1
-        
-        # 处理子目录
-        for dir_name in dirs:
-            subdir_path = os.path.join(root_dir, dir_name)
-            subdir_info = scan_directory_structure(subdir_path)
-            result["subdirs"].append(subdir_info)
-            result["archive_count"] += subdir_info["archive_count"]
-            result["total_size"] += subdir_info["total_size"]
-        
-        # 添加文件信息
-        result["files"] = files
-        
-    except Exception as e:
-        logger.error(f"扫描目录 {root_dir} 时出错: {str(e)}")
-    
-    return result
 
 def backup_file(file_path, backup_dir=None):
     """
@@ -204,6 +173,10 @@ def backup_file(file_path, backup_dir=None):
     Returns:
         str: 备份文件的路径
     """
+    if backup_dir is None:
+        # 尝试从配置获取备份目录
+        backup_dir = config.get_value('directories.backup_dir')
+    
     if not os.path.exists(file_path):
         logger.warning(f"要备份的文件不存在: {file_path}")
         return None

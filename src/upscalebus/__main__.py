@@ -1,13 +1,29 @@
-# d:\1VSCODE\Projects\ImageAll\UpscalePipe\src\upscalebus\upscale_bus.py
+# d:\1VSCODE\Projects\ImageAll\UpscalePipe\src\upscalebus\__main__.py
 import os
+import sys
+import traceback
+from pathlib import Path
+from datetime import datetime
+
 # 从新模块导入功能
 from .core.file_utils import remove_temp_files
 from .core.archive_processor import process_corrupted_archives, compare_and_copy_archives
 from loguru import logger
-import os
-import sys
-from pathlib import Path
-from datetime import datetime
+
+# Rich库导入
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.prompt import Prompt, Confirm
+    from rich.table import Table
+    from rich.columns import Columns
+    from rich.syntax import Syntax
+    from rich.traceback import install
+    # 安装Rich异常处理
+    install(show_locals=True)
+except ImportError:
+    print("错误: 未安装Rich库，请运行 pip install rich 安装该库")
+    sys.exit(1)
 
 def setup_logger(app_name="app", project_root=None, console_output=True):
     """配置 Loguru 日志系统
@@ -68,7 +84,7 @@ def setup_logger(app_name="app", project_root=None, console_output=True):
     return logger, config_info
 
 
-logger, config_info = setup_logger(app_name="upscale_bus", console_output=False)
+logger, config_info = setup_logger(app_name="upscale_bus", console_output=True)
 
 # error_handler 模块似乎未使用，暂时注释掉
 # from .error_handler import handle_file_operation
@@ -104,38 +120,135 @@ TEXTUAL_LAYOUT = {
     }
 }
 
-TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
+# TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
 
 def main():
     """主执行函数"""
-    # 定义目录路径列表
-    directory_pairs = [
+    # 使用Rich创建更好的UI
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.prompt import Prompt, Confirm
+    from rich.table import Table
+    from rich.columns import Columns
+    from rich.syntax import Syntax
+    
+    console = Console()
+    
+    # 显示欢迎信息
+    console.print(Panel(
+        "[bold green]UpscaleBus[/] - 压缩包文件处理工具\n\n"
+        "该工具可以安全地处理压缩包文件，支持以下功能：\n"
+        "• 按目录级别处理文件\n"
+        "• 操作前预览和确认\n"
+        "• 严格的安全性检查，避免数据损失\n"
+        "• 文件备份和恢复机制",
+        title="欢迎使用",
+        border_style="blue"
+    ))
+    
+    # 定义默认目录路径列表
+    default_directory_pairs = [
         ("D:\\3EHV", "E:\\7EHV"),
         ("E:\\7EHV", "E:\\999EHV"),
     ]
-    is_move = True  # 设置为True则移动文件，False则复制文件
-
+    
+    # 让用户选择或输入目录对
+    console.print("\n[bold]请选择要处理的目录对，或输入新的目录对:[/]")
+    
+    # 显示默认目录对
+    table = Table(title="预设目录对")
+    table.add_column("序号", style="dim")
+    table.add_column("源目录", style="green")
+    table.add_column("目标目录", style="yellow")
+    
+    for i, (source, target) in enumerate(default_directory_pairs, 1):
+        table.add_row(str(i), source, target)
+    
+    console.print(table)
+    console.print("输入 [cyan]0[/] 来手动输入目录对")
+    
+    # 获取用户选择
+    choice = Prompt.ask("请选择", default="1")
+    
+    directory_pairs = []
+    if choice == "0":
+        # 手动输入目录对
+        source_dir = Prompt.ask("请输入源目录路径")
+        target_dir = Prompt.ask("请输入目标目录路径")
+        directory_pairs.append((source_dir, target_dir))
+    else:
+        try:
+            idx = int(choice) - 1
+            if 0 <= idx < len(default_directory_pairs):
+                directory_pairs.append(default_directory_pairs[idx])
+            else:
+                console.print("[red]无效选择，将使用第一个目录对[/]")
+                directory_pairs.append(default_directory_pairs[0])
+        except ValueError:
+            console.print("[red]无效输入，将使用第一个目录对[/]")
+            directory_pairs.append(default_directory_pairs[0])
+    
+    # 选择操作类型
+    is_move = Confirm.ask("\n是否移动文件？（否则复制）", default=True)
+    operation_type = "移动" if is_move else "复制"
+    
     # 依次处理每对目录
     for source_dir, target_dir in directory_pairs:
-        logger.info(f"[#stats]\n开始处理目录对：")
-        logger.info(f"[#processing]源目录: {source_dir}")
-        logger.info(f"[#processing]目标目录: {target_dir}")
+        console.print(f"\n[bold]开始处理目录对：[/]")
+        console.print(f"源目录: [green]{source_dir}[/]")
+        console.print(f"目标目录: [yellow]{target_dir}[/]")
+        console.print(f"操作类型: [cyan]{operation_type}[/]")
 
         if not os.path.exists(source_dir):
-            logger.info("[#processing]源目录不存在！")
+            console.print("[red]源目录不存在！[/]")
             continue
-        # 目标目录不存在时，compare_and_copy_archives 会自动创建
-
-        # 先检测损坏的压缩包
-        logger.info("[#processing]\n开始检测损坏压缩包...")
-        process_corrupted_archives(source_dir) # 调用重构后的函数
-
+        
+        # 显示功能菜单
+        console.print(Panel("\n[bold]请选择要执行的操作：[/]", border_style="cyan"))
+        console.print("1. [green]检测损坏压缩包[/]")
+        console.print("2. [green]清理临时文件[/]")
+        console.print("3. [green]执行文件处理操作[/] (复制或移动)")
+        console.print("4. [green]执行全部操作[/] (按顺序执行上述所有操作)")
+        console.print("0. [red]跳过此目录对[/]")
+        
+        action = Prompt.ask("\n请选择操作", default="4")
+        
+        if action == "0":
+            console.print("[yellow]已跳过此目录对[/]")
+            continue
+        
+        # 检测损坏的压缩包
+        if action in ["1", "4"]:
+            console.print("\n[bold]开始检测损坏压缩包...[/]")
+            process_corrupted_archives(source_dir)
+        
         # 删除临时文件
-        temp_files_removed = remove_temp_files(source_dir) # 调用重构后的函数
-        logger.info(f"[#processing]\n已删除 {temp_files_removed} 个临时文件")
-
+        if action in ["2", "4"]:
+            console.print("\n[bold]开始清理临时文件...[/]")
+            temp_files_removed = remove_temp_files(source_dir)
+            console.print(f"[green]已删除 {temp_files_removed} 个临时文件[/]")
+        
         # 执行文件移动/复制操作
-        compare_and_copy_archives(source_dir, target_dir, is_move) # 调用重构后的函数
+        if action in ["3", "4"]:
+            console.print(f"\n[bold]开始{operation_type}文件...[/]")
+            compare_and_copy_archives(source_dir, target_dir, is_move)
 
 if __name__ == "__main__":
-    main()
+    try:
+        # 创建控制台对象
+        console = Console()
+        
+        # 设置日志配置
+        logger, config_info = setup_logger(app_name="upscale_bus", console_output=True)
+        
+        # 添加Rich控制台输出
+        console.print(Panel(f"日志文件: [cyan]{config_info['log_file']}[/]", title="日志配置", border_style="blue"))
+        
+        # 运行主函数
+        main()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]操作已被用户中断[/]")
+    except Exception as e:
+        console.print(f"\n[red bold]发生错误: {str(e)}[/]")
+        console.print_exception()
+        logger.error(f"程序异常退出: {str(e)}\n{traceback.format_exc()}")

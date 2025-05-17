@@ -4,10 +4,10 @@
 import os
 from datetime import datetime
 from loguru import logger
-from badzipfliter import run_check
+from badzfliter import run_check
 
 def run_bad_zip_check(force_check=False):
-    """使用badzipfliter模块执行损坏文件检测并获取返回码
+    """使用badzfliter模块执行损坏文件检测并获取返回码
     
     Args:
         force_check: 是否强制检查所有文件，忽略已处理记录
@@ -17,7 +17,7 @@ def run_bad_zip_check(force_check=False):
     """
     logger.info("开始执行损坏文件检测...")
     try:
-        # 使用导入的badzipfliter模块，调用run_check函数
+        # 使用导入的badzfliter模块，调用run_check函数
         status_code = run_check(force_check=force_check, no_tui=True)
         
         # 根据状态码判断成功与否

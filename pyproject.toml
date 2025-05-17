@@ -9,6 +9,8 @@ dependencies = [
     "loguru>=0.7.0",
     "send2trash>=1.8.0",
     "TextualLog @ git+https://github.com/HibernalGlow/TextualLog.git",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
 ]
 
 [project.optional-dependencies]
