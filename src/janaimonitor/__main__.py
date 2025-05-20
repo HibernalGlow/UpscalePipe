@@ -96,7 +96,9 @@ TEXTUAL_LAYOUT = {
     }
 }
 
-TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
+def init_textual(config_info, TEXTUAL_LAYOUT):
+    TextualLoggerManager.set_layout(TEXTUAL_LAYOUT,config_info['log_file'])
+
 
 def main():
     """主函数"""
@@ -113,7 +115,8 @@ def main():
         logger.info("初始文件检查完成并成功")
     else:
         logger.warning("初始文件检查失败或发现问题")
-        
+    init_textual(config_info, TEXTUAL_LAYOUT)
+    
     # 启动并监控MangaJaNaiConverter
     try:
         run_manga_with_monitor(force_check=args.force_check)

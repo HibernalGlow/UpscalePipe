@@ -5,7 +5,7 @@ description = "用于处理图像文件和压缩包的工具集"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "ImageFliter @ git+https://github.com/HibernalGlow/ImageFliter.git",
+    "ImageFilter @ git+https://github.com/HibernalGlow/ImageFilter.git",
     "loguru>=0.7.0",
     "send2trash>=1.8.0",
     "TextualLog @ git+https://github.com/HibernalGlow/TextualLog.git",

@@ -52,9 +52,9 @@ wheels = [
 ]
 
 [[package]]
-name = "imagefliter"
+name = "ImageFilter"
 version = "1.0.0"
-source = { git = "https://github.com/HibernalGlow/ImageFliter.git#a94c25837e23c924cab99a72db5344a35beb8055" }
+source = { git = "https://github.com/HibernalGlow/ImageFilter.git#a94c25837e23c924cab99a72db5344a35beb8055" }
 dependencies = [
     { name = "loguru" },
     { name = "pathlib" },
@@ -519,7 +519,7 @@ name = "upscalepipe"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "imagefliter" },
+    { name = "ImageFilter" },
     { name = "loguru" },
     { name = "send2trash" },
     { name = "textuallog" },
@@ -535,7 +535,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
-    { name = "imagefliter", git = "https://github.com/HibernalGlow/ImageFliter.git" },
+    { name = "ImageFilter", git = "https://github.com/HibernalGlow/ImageFilter.git" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12.0" },
     { name = "loguru", specifier = ">=0.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
