@@ -1,0 +1,41 @@
+[project]
+name = "upscalepipe"
+version = "0.1.0"
+description = "用于处理图像文件和压缩包的工具集"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "organizef @ git+https://github.com/HibernalGlow/OrganizeFolder.git",
+    "loguru>=0.7.0",
+    "send2trash>=1.8.0",
+    "TextualLog @ git+https://github.com/HibernalGlow/TextualLog.git",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0"
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+[tool.setuptools]
+package-dir = {"" = "src"} 
+packages = ["janaimonitor", "upscalebus"]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+upscalebus = "upscalebus.__main__:main"
+upb = "upscalebus.__main__:main"
+janaimonitor = "janaimonitor.__main__:main"
+jamon = "janaimonitor.__main__:main"

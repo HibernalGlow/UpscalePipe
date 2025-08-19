@@ -1,0 +1,41 @@
+{    "file_operations": {
+        "min_valid_file_size": 1048576,
+        "size_difference_threshold": 0.5,
+        "file_count_difference_threshold": 0.0,
+        "ignored_extensions": [".md", ".yaml", ".yml", ".txt", ".json", ".db", ".ini"],
+        "archive_check_timeout": 300,
+        "archive_check_min_timeout": 60,
+        "archive_check_max_timeout": 1800,
+        "archive_check_timeout_per_100mb": 60
+    },
+    "archive_extensions": [".zip", ".cbz", ".rar", ".7z"],
+    "temp_extensions": [".tdel", ".bak"],
+    "directory_pairs": [
+        {
+            "source": "D:\\3EHV",
+            "target": "E:\\7EHV"
+        },
+        {
+            "source": "E:\\7EHV",
+            "target": "E:\\999EHV"
+        }
+    ],
+    "scan": {
+        "max_workers": 4,
+        "skip_checked": true
+    },
+    "ui": {
+        "table_style": "rounded",
+        "success_color": "green",
+        "error_color": "red",
+        "warning_color": "yellow",
+        "info_color": "blue"
+    },
+    "auto_operations": {
+        "check_corrupted": true,
+        "clean_temp_files": true,
+        "rename_cbz_to_zip": true,
+        "remove_empty_dirs": true
+    },
+    "default_mode": "move"
+}
